@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.takeaway.analysis.mapper.CleaningRuleMapper">
+
+    <resultMap id="BaseResultMap" type="com.takeaway.analysis.entity.CleaningRule">
+        <id column="rule_id" property="ruleId"/>
+        <result column="rule_type" property="ruleType"/>
+        <result column="min_value" property="minValue"/>
+        <result column="max_value" property="maxValue"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.takeaway.analysis.entity.CleaningRule" useGeneratedKeys="true" keyProperty="ruleId">
+        INSERT INTO cleaning_rules (rule_type, min_value, max_value, description, status)
+        VALUES (#{ruleType}, #{minValue}, #{maxValue}, #{description}, #{status})
+    </insert>
+
+    <update id="update" parameterType="com.takeaway.analysis.entity.CleaningRule">
+        UPDATE cleaning_rules
+        SET min_value = #{minValue},
+            max_value = #{maxValue},
+            description = #{description},
+            status = #{status}
+        WHERE rule_type = #{ruleType}
+    </update>
+
+    <select id="selectByType" resultMap="BaseResultMap">
+        SELECT * FROM cleaning_rules WHERE rule_type = #{ruleType} AND status = 1
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM cleaning_rules WHERE status = 1 ORDER BY rule_type
+    </select>
+
+    <delete id="deleteByType">
+        DELETE FROM cleaning_rules WHERE rule_type = #{ruleType}
+    </delete>
+
+</mapper>

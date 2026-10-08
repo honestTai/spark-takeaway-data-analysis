@@ -1,0 +1,30 @@
+@startuml seq_analysis_hot_dishes
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+
+actor "用户" as U
+participant "前端\n热门菜品图表页" as FE
+participant "JwtAuthenticationInterceptor" as I
+participant "AnalysisController" as C
+participant "Spark分析服务\nSparkAnalysisService" as S
+database "MySQL\n(dishes + analysis_results)" as DB
+
+U -> FE : 查看热门菜品TopN
+FE -> I : GET /analysis/hot-dishes?limit=10\nAuthorization: Bearer token
+I -> I : 校验Token
+I -> C : 放行请求
+
+C -> S : analyzeHotDishes(limit)
+alt 命中内存缓存(hot_dishes_limit)
+  S --> C : List<Map>
+  C --> FE : Result.success(data)
+else 未命中缓存
+  S -> DB : JDBC读取dishes\n并按销量排序取TopN
+  DB --> S : 结果集
+  S -> DB : 写入/更新 analysis_results\n(结果缓存)
+  S --> C : List<Map>
+  C --> FE : Result.success(data)
+end
+
+@enduml

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.takeaway.analysis.mapper.MerchantMapper">
+
+    <resultMap id="BaseResultMap" type="com.takeaway.analysis.entity.Merchant">
+        <id column="merchant_id" property="merchantId"/>
+        <result column="merchant_name" property="merchantName"/>
+        <result column="merchant_type" property="merchantType"/>
+        <result column="rating" property="rating"/>
+        <result column="total_sales" property="totalSales"/>
+        <result column="monthly_sales" property="monthlySales"/>
+        <result column="min_order_price" property="minOrderPrice"/>
+        <result column="delivery_fee" property="deliveryFee"/>
+        <result column="address" property="address"/>
+        <result column="phone" property="phone"/>
+        <result column="business_hours" property="businessHours"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.takeaway.analysis.entity.Merchant" useGeneratedKeys="true" keyProperty="merchantId">
+        INSERT INTO merchants (merchant_name, merchant_type, rating, total_sales, monthly_sales,
+                              min_order_price, delivery_fee, address, phone, business_hours, status)
+        VALUES (#{merchantName}, #{merchantType}, #{rating}, #{totalSales}, #{monthlySales},
+                #{minOrderPrice}, #{deliveryFee}, #{address}, #{phone}, #{businessHours}, #{status})
+    </insert>
+
+    <update id="update" parameterType="com.takeaway.analysis.entity.Merchant">
+        UPDATE merchants
+        SET merchant_name = #{merchantName},
+            merchant_type = #{merchantType},
+            rating = #{rating},
+            total_sales = #{totalSales},
+            monthly_sales = #{monthlySales},
+            min_order_price = #{minOrderPrice},
+            delivery_fee = #{deliveryFee},
+            address = #{address},
+            phone = #{phone},
+            business_hours = #{businessHours},
+            status = #{status}
+        WHERE merchant_id = #{merchantId}
+    </update>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM merchants WHERE merchant_id = #{merchantId}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM merchants WHERE status = 1 ORDER BY create_time DESC
+    </select>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM merchants WHERE status = 1
+        <if test="merchantType != null and merchantType != ''">
+            AND merchant_type = #{merchantType}
+        </if>
+        <if test="merchantName != null and merchantName != ''">
+            AND merchant_name LIKE CONCAT('%', #{merchantName}, '%')
+        </if>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM merchants WHERE status = 1
+    </select>
+
+    <select id="countByType" resultType="java.util.Map">
+        SELECT merchant_type AS merchant_type, COUNT(*) AS count
+        FROM merchants
+        WHERE status = 1 AND merchant_type IS NOT NULL AND TRIM(merchant_type) != ''
+        GROUP BY merchant_type
+        ORDER BY count DESC
+    </select>
+
+    <select id="selectCount" resultType="int">
+        SELECT COUNT(*) FROM merchants WHERE status = 1
+        <if test="merchantType != null and merchantType != ''">
+            AND merchant_type = #{merchantType}
+        </if>
+        <if test="merchantName != null and merchantName != ''">
+            AND merchant_name LIKE CONCAT('%', #{merchantName}, '%')
+        </if>
+    </select>
+
+    <select id="selectByType" resultMap="BaseResultMap">
+        SELECT * FROM merchants WHERE merchant_type = #{merchantType} AND status = 1
+        ORDER BY total_sales DESC
+    </select>
+
+    <select id="selectTopBySales" resultMap="BaseResultMap">
+        SELECT * FROM merchants WHERE status = 1
+        ORDER BY total_sales DESC LIMIT #{limit}
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM merchants WHERE merchant_id = #{merchantId}
+    </delete>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO merchants (merchant_name, merchant_type, rating, total_sales, monthly_sales,
+                              min_order_price, delivery_fee, address, phone, business_hours, status)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.merchantName}, #{item.merchantType}, #{item.rating}, #{item.totalSales}, #{item.monthlySales},
+             #{item.minOrderPrice}, #{item.deliveryFee}, #{item.address}, #{item.phone}, #{item.businessHours}, #{item.status})
+        </foreach>
+    </insert>
+
+    <select id="selectByName" resultMap="BaseResultMap">
+        SELECT * FROM merchants WHERE merchant_name = #{merchantName} LIMIT 1
+    </select>
+
+    <select id="selectAllNames" resultType="java.lang.String">
+        SELECT merchant_name FROM merchants WHERE status = 1
+    </select>
+
+    <select id="selectRatingVsSales" resultType="java.util.Map">
+        SELECT merchant_name, rating, total_sales
+        FROM merchants
+        WHERE status = 1 AND rating IS NOT NULL
+        ORDER BY rating DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectTypeComparison" resultType="java.util.Map">
+        SELECT
+            merchant_type,
+            ROUND(AVG(rating), 1)      AS avg_rating,
+            SUM(total_sales)            AS total_sales,
+            COUNT(merchant_id)          AS merchant_count
+        FROM merchants
+        WHERE status = 1
+          AND merchant_type IS NOT NULL
+          AND TRIM(merchant_type) != ''
+        GROUP BY merchant_type
+        ORDER BY total_sales DESC
+    </select>
+
+</mapper>
+

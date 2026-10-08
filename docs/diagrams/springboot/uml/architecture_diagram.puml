@@ -1,0 +1,73 @@
+@startuml architecture_diagram
+skinparam dpi 200
+skinparam monochrome true
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam defaultFontSize 18
+skinparam packageFontSize 18
+skinparam componentFontSize 16
+skinparam ArrowThickness 2
+skinparam packageBorderThickness 2
+skinparam componentBorderThickness 2
+left to right direction
+
+actor "用户" as User
+
+package "前端（Vue）" as FE {
+  [页面模块\n登录/采集/清洗/导入/分析/商户] as FE_Pages
+  [HTTP客户端\naxios + Token拦截] as FE_HTTP
+  FE_Pages --> FE_HTTP
+}
+
+package "后端（Spring Boot）" as BE {
+  [鉴权拦截器\nJWT] as BE_JWT
+
+  package "REST API" as BE_API {
+    [业务控制器\nAuth/Crawler/Cleaning/Import/Analysis/Merchant] as BE_Ctrl
+  }
+
+  package "业务服务" as BE_SVC {
+    [认证服务\n登录/刷新Token] as S_Auth
+    [采集服务\n商户/菜品采集] as S_Crawler
+    [清洗服务\n规则读取/校验/去重] as S_Clean
+    [导入服务\n文件解析/导入日志] as S_Import
+    [分析服务\nSpark统计/结果缓存] as S_Analysis
+    [基础查询服务\n商户/菜品查询] as S_Query
+  }
+
+  package "数据访问（MyBatis）" as BE_DAO {
+    [Mapper接口 + XML映射] as BE_Mapper
+  }
+
+  [分析引擎\nSparkSession] as BE_Spark
+  [JWT工具\nJwtUtil] as BE_JwtUtil
+}
+
+database "MySQL\n(业务数据/统计/缓存)" as DB
+cloud "美团外卖\nH5/接口" as MT
+
+User --> FE_Pages
+FE_HTTP --> BE_JWT : HTTP(S)\nAuthorization: Bearer token
+
+BE_JWT --> BE_Ctrl
+BE_Ctrl --> S_Auth
+BE_Ctrl --> S_Crawler
+BE_Ctrl --> S_Clean
+BE_Ctrl --> S_Import
+BE_Ctrl --> S_Analysis
+BE_Ctrl --> S_Query
+
+S_Auth --> BE_JwtUtil
+S_Crawler --> MT
+
+S_Auth --> BE_Mapper
+S_Clean --> BE_Mapper
+S_Import --> BE_Mapper
+S_Analysis --> BE_Mapper
+S_Query --> BE_Mapper
+BE_Mapper --> DB
+
+S_Analysis --> BE_Spark
+BE_Spark --> DB : JDBC
+
+@enduml

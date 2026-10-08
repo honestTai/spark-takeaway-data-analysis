@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.takeaway.analysis.mapper.OrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.takeaway.analysis.entity.Order">
+        <id column="order_id" property="orderId"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="user_id" property="userId"/>
+        <result column="merchant_id" property="merchantId"/>
+        <result column="order_amount" property="orderAmount"/>
+        <result column="delivery_fee" property="deliveryFee"/>
+        <result column="discount_amount" property="discountAmount"/>
+        <result column="actual_amount" property="actualAmount"/>
+        <result column="order_status" property="orderStatus"/>
+        <result column="payment_method" property="paymentMethod"/>
+        <result column="delivery_address" property="deliveryAddress"/>
+        <result column="contact_phone" property="contactPhone"/>
+        <result column="remark" property="remark"/>
+        <result column="order_time" property="orderTime"/>
+        <result column="pay_time" property="payTime"/>
+        <result column="complete_time" property="completeTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.takeaway.analysis.entity.Order" useGeneratedKeys="true" keyProperty="orderId">
+        INSERT INTO orders (order_no, user_id, merchant_id, order_amount, delivery_fee, discount_amount,
+                           actual_amount, order_status, payment_method, delivery_address, contact_phone,
+                           remark, order_time, pay_time, complete_time)
+        VALUES (#{orderNo}, #{userId}, #{merchantId}, #{orderAmount}, #{deliveryFee}, #{discountAmount},
+                #{actualAmount}, #{orderStatus}, #{paymentMethod}, #{deliveryAddress}, #{contactPhone},
+                #{remark}, #{orderTime}, #{payTime}, #{completeTime})
+    </insert>
+
+    <select id="selectPriceDistribution" resultType="java.util.Map">
+        SELECT 
+            CASE 
+                WHEN actual_amount &lt; 30 THEN '0-30元'
+                WHEN actual_amount &lt; 50 THEN '30-50元'
+                WHEN actual_amount &lt; 100 THEN '50-100元'
+                ELSE '100元以上'
+            END AS price_range,
+            COUNT(*) AS order_count
+        FROM orders
+        WHERE order_status IN (2, 4)
+        GROUP BY price_range
+    </select>
+
+    <select id="selectByTimeRange" resultMap="BaseResultMap">
+        SELECT * FROM orders
+        WHERE order_time BETWEEN #{startTime} AND #{endTime}
+        ORDER BY order_time DESC
+    </select>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM orders
+    </select>
+
+    <select id="countDistinctUserCount" resultType="int">
+        SELECT COUNT(DISTINCT user_id)
+        FROM orders
+        WHERE user_id IS NOT NULL
+    </select>
+
+    <select id="countByTimeRange" resultType="int">
+        SELECT COUNT(*) FROM orders
+        WHERE order_time BETWEEN #{startTime} AND #{endTime}
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO orders (order_no, user_id, merchant_id, order_amount, delivery_fee, discount_amount,
+                           actual_amount, order_status, payment_method, delivery_address, contact_phone,
+                           remark, order_time, pay_time, complete_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.orderNo}, #{item.userId}, #{item.merchantId}, #{item.orderAmount}, #{item.deliveryFee},
+             #{item.discountAmount}, #{item.actualAmount}, #{item.orderStatus}, #{item.paymentMethod},
+             #{item.deliveryAddress}, #{item.contactPhone}, #{item.remark}, #{item.orderTime},
+             #{item.payTime}, #{item.completeTime})
+        </foreach>
+    </insert>
+
+</mapper>
+

@@ -1,0 +1,26 @@
+@startuml seq_auth_login
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+
+actor "用户" as U
+participant "前端\nLogin 页面" as FE
+participant "认证接口\nAuthController" as C
+participant "认证服务\nAuthService" as S
+database "MySQL\n(sys_user)" as DB
+
+U -> FE : 输入用户名/密码
+FE -> C : POST /auth/login\n{username,password}
+C -> S : login(username,password,ip)
+S -> DB : 查询sys_user\n校验密码(BCrypt)\n生成JWT并更新登录信息
+DB --> S : 校验结果/用户信息
+alt 密码或状态校验失败
+  S --> C : {success:false,message}
+  C --> FE : Result.error(message)
+else 校验通过
+  S --> C : {success:true,token,user}
+  C --> FE : Result.success(data)
+  FE -> FE : localStorage.token = token
+end
+
+@enduml

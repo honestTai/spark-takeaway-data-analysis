@@ -1,0 +1,24 @@
+@startuml seq_cleaning_rules_save
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+
+actor "用户" as U
+participant "前端\n规则设置页" as FE
+participant "JwtAuthenticationInterceptor" as I
+participant "DataCleaningController" as C
+participant "规则服务\nCleaningRuleService" as S
+database "MySQL\n(cleaning_rules)" as DB
+
+U -> FE : 修改评分/价格/销量范围\n点击保存
+FE -> I : POST /cleaning/rules\n{ratingMin,ratingMax,priceMin,priceMax,salesMin,salesMax}
+I -> I : 校验Token
+I -> C : 放行请求
+
+C -> S : saveRules(rulesMap)
+S -> DB : 写入/更新cleaning_rules\n(按rating/price/sales分别保存)
+DB --> S : ok
+S --> C : void
+C --> FE : Result.success(\"清洗规则保存成功\")
+
+@enduml

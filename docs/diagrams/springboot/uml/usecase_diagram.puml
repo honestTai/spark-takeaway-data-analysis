@@ -1,0 +1,74 @@
+@startuml
+' 美化设置
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+    Shadowing false
+}
+skinparam actor {
+    BackgroundColor White
+    BorderColor Black
+}
+skinparam rectangle {
+    BackgroundColor White
+    BorderColor Black
+    Shadowing false
+}
+
+left to right direction
+
+actor "用户" as user
+
+rectangle "外卖数据分析系统" {
+    
+    ' 数据采集
+    usecase "商户信息采集" as UC1
+    usecase "菜品信息采集" as UC2
+    usecase "批量采集与调度" as UC3
+
+    ' 数据管理与清洗
+    usecase "数据清洗" as UC4
+    usecase "数据存储" as UC5
+    usecase "字段解析与映射" as UC6
+    
+    ' 数据分析
+    usecase "商户多维分析" as UC7
+    usecase "菜品深度挖掘" as UC8
+    usecase "销售趋势分析" as UC9
+
+    ' 可视化展示
+    usecase "菜品类别占比分析" as UC10
+    usecase "热门菜品分析" as UC11
+    usecase "商户经营分析" as UC12
+    usecase "商户销量统计与排名" as UC13
+    usecase "订单趋势分析" as UC14
+    usecase "价格区间分布分析" as UC15
+    usecase "用户行为分析" as UC16
+}
+
+' 布局调整 - 强制分层
+UC1 -[hidden]-- UC4
+UC4 -[hidden]-- UC7
+UC7 -[hidden]-- UC10
+
+' 关系连接
+user --> UC1
+user --> UC2
+user --> UC3
+user --> UC4
+user --> UC5
+user --> UC6
+user --> UC7
+user --> UC8
+user --> UC9
+user --> UC10
+user --> UC11
+user --> UC12
+user --> UC13
+user --> UC14
+user --> UC15
+user --> UC16
+
+@enduml

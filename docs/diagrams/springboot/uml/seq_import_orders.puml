@@ -1,0 +1,30 @@
+@startuml seq_import_orders
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+
+actor "用户" as U
+participant "前端\n数据导入页" as FE
+participant "JwtAuthenticationInterceptor" as I
+participant "DataImportController" as C
+participant "导入服务\nDataImportService" as S
+participant "清洗服务\nDataCleaningService" as CLN
+database "MySQL\n(import_logs + orders)" as DB
+
+U -> FE : 选择订单文件(JSON行)\n点击导入
+FE -> I : POST /import/orders multipart(file)\nAuthorization: Bearer token
+I -> I : 校验Token
+I -> C : 放行请求
+
+C -> S : importOrders(file)
+S -> DB : 写入import_logs(进行中)
+S -> S : 解析文件为订单列表
+S -> CLN : cleanOrders(orders)
+CLN -> CLN : 标准化/校验/去重
+CLN --> S : {cleanedData,duplicateCount,invalidCount,...}
+S -> DB : 批量/逐条写入orders
+S -> DB : 更新import_logs(统计+状态)
+S --> C : ImportLog
+C --> FE : Result.success(ImportLog)
+
+@enduml

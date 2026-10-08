@@ -1,0 +1,125 @@
+@startuml er_takeaway_analysis
+skinparam monochrome true
+skinparam shadowing false
+hide circle
+
+entity "merchants" as merchants {
+  * merchant_id : BIGINT <<PK>>
+  --
+  merchant_name : VARCHAR
+  merchant_type : VARCHAR
+  rating : DECIMAL
+  total_sales : INT
+  monthly_sales : INT
+  status : TINYINT
+}
+
+entity "dishes" as dishes {
+  * dish_id : BIGINT <<PK>>
+  --
+  merchant_id : BIGINT <<FK>>
+  dish_name : VARCHAR
+  category : VARCHAR
+  price : DECIMAL
+  sales_count : INT
+  status : TINYINT
+}
+
+entity "users" as users {
+  * user_id : BIGINT <<PK>>
+  --
+  username : VARCHAR
+  phone : VARCHAR
+  status : TINYINT
+}
+
+entity "orders" as orders {
+  * order_id : BIGINT <<PK>>
+  --
+  order_no : VARCHAR <<UK>>
+  user_id : BIGINT <<FK>>
+  merchant_id : BIGINT <<FK>>
+  order_amount : DECIMAL
+  actual_amount : DECIMAL
+  order_status : TINYINT
+  order_time : DATETIME
+}
+
+entity "order_items" as order_items {
+  * item_id : BIGINT <<PK>>
+  --
+  order_id : BIGINT <<FK>>
+  dish_id : BIGINT <<FK>>
+  dish_name : VARCHAR
+  dish_price : DECIMAL
+  quantity : INT
+  subtotal : DECIMAL
+}
+
+entity "import_logs" as import_logs {
+  * log_id : BIGINT <<PK>>
+  --
+  import_type : VARCHAR
+  file_name : VARCHAR
+  total_count : INT
+  success_count : INT
+  fail_count : INT
+  import_status : TINYINT
+  start_time : DATETIME
+  end_time : DATETIME
+}
+
+entity "analysis_results" as analysis_results {
+  * result_id : BIGINT <<PK>>
+  --
+  analysis_type : VARCHAR
+  result_key : VARCHAR
+  result_data : JSON
+  stat_date : DATE
+}
+
+entity "user_consumption_stats" as user_consumption_stats {
+  * stat_id : BIGINT <<PK>>
+  --
+  user_id : BIGINT <<FK>>
+  total_orders : INT
+  total_amount : DECIMAL
+  stat_date : DATE
+}
+
+entity "merchant_business_stats" as merchant_business_stats {
+  * stat_id : BIGINT <<PK>>
+  --
+  merchant_id : BIGINT <<FK>>
+  total_orders : INT
+  total_revenue : DECIMAL
+  stat_date : DATE
+}
+
+entity "sys_user" as sys_user {
+  * user_id : BIGINT <<PK>>
+  --
+  username : VARCHAR <<UK>>
+  password : VARCHAR
+  role : VARCHAR
+  status : TINYINT
+}
+
+entity "cleaning_rules" as cleaning_rules {
+  * rule_id : BIGINT <<PK>>
+  --
+  rule_type : VARCHAR <<UK>>
+  min_value : DECIMAL
+  max_value : DECIMAL
+  status : TINYINT
+}
+
+merchants ||--o{ dishes
+merchants ||--o{ orders
+users ||--o{ orders
+orders ||--o{ order_items
+dishes ||--o{ order_items
+users ||--o{ user_consumption_stats
+merchants ||--o{ merchant_business_stats
+
+@enduml

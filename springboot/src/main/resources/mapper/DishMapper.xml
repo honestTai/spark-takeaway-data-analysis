@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.takeaway.analysis.mapper.DishMapper">
+
+    <resultMap id="BaseResultMap" type="com.takeaway.analysis.entity.Dish">
+        <id column="dish_id" property="dishId"/>
+        <result column="merchant_id" property="merchantId"/>
+        <result column="dish_name" property="dishName"/>
+        <result column="category" property="category"/>
+        <result column="price" property="price"/>
+        <result column="original_price" property="originalPrice"/>
+        <result column="sales_count" property="salesCount"/>
+        <result column="monthly_sales" property="monthlySales"/>
+        <result column="description" property="description"/>
+        <result column="image_url" property="imageUrl"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.takeaway.analysis.entity.Dish" useGeneratedKeys="true" keyProperty="dishId">
+        INSERT INTO dishes (merchant_id, dish_name, category, price, original_price, sales_count,
+                           monthly_sales, description, image_url, status)
+        VALUES (#{merchantId}, #{dishName}, #{category}, #{price}, #{originalPrice}, #{salesCount},
+                #{monthlySales}, #{description}, #{imageUrl}, #{status})
+    </insert>
+
+    <update id="update" parameterType="com.takeaway.analysis.entity.Dish">
+        UPDATE dishes
+        SET dish_name = #{dishName},
+            category = #{category},
+            price = #{price},
+            original_price = #{originalPrice},
+            sales_count = #{salesCount},
+            monthly_sales = #{monthlySales},
+            description = #{description},
+            image_url = #{imageUrl},
+            status = #{status}
+        WHERE dish_id = #{dishId}
+    </update>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM dishes WHERE dish_id = #{dishId}
+    </select>
+
+    <select id="selectByMerchantId" resultMap="BaseResultMap">
+        SELECT * FROM dishes WHERE merchant_id = #{merchantId} AND status = 1
+        ORDER BY sales_count DESC
+    </select>
+
+    <select id="selectTopBySales" resultMap="BaseResultMap">
+        SELECT * FROM dishes WHERE status = 1
+        ORDER BY sales_count DESC LIMIT #{limit}
+    </select>
+
+    <select id="selectByCategory" resultMap="BaseResultMap">
+        SELECT * FROM dishes WHERE category = #{category} AND status = 1
+        ORDER BY sales_count DESC
+    </select>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM dishes WHERE status = 1
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM dishes WHERE dish_id = #{dishId}
+    </delete>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO dishes (merchant_id, dish_name, category, price, original_price, sales_count,
+                           monthly_sales, description, image_url, status)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.merchantId}, #{item.dishName}, #{item.category}, #{item.price}, #{item.originalPrice},
+             #{item.salesCount}, #{item.monthlySales}, #{item.description}, #{item.imageUrl}, #{item.status})
+        </foreach>
+    </insert>
+
+    <select id="selectByMerchantIdAndName" resultMap="BaseResultMap">
+        SELECT * FROM dishes 
+        WHERE merchant_id = #{merchantId} AND dish_name = #{dishName} 
+        LIMIT 1
+    </select>
+
+</mapper>
+

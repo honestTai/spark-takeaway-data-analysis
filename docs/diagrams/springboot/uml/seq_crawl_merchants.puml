@@ -1,0 +1,39 @@
+@startuml seq_crawl_merchants
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+
+actor "用户" as U
+participant "前端\n爬虫-商户页" as FE
+participant "JwtAuthenticationInterceptor" as I
+participant "CrawlerController" as C
+participant "采集服务\nCrawlerService" as CS
+cloud "美团外卖\nH5/接口" as MT
+participant "清洗服务\nDataCleaningService" as CLN
+participant "商户服务\nMerchantService" as MS
+database "MySQL\n(merchants + cleaning_rules)" as DB
+
+U -> FE : 输入关键词/数量
+FE -> I : POST /crawler/merchants?keyword&pageSize\nAuthorization: Bearer token
+I -> I : 校验Token
+I -> C : 放行请求
+
+C -> CS : crawlMerchants(keyword,pageSize)
+CS -> MT : 获取商户列表(API/HTML)
+MT --> CS : 原始商户数据
+CS --> C : List<Merchant>
+
+C -> CLN : cleanMerchants(merchants)
+CLN -> DB : 读取cleaning_rules\n按规则校验/去重
+DB --> CLN : 规则/校验结果
+CLN --> C : {cleanedData,duplicateCount,invalidCount,...}
+
+alt cleanedData非空
+  C -> MS : batchSaveMerchants(cleanedMerchants)
+  MS -> DB : 批量写入merchants
+  DB --> MS : ok
+end
+
+C --> FE : Result.success(cleanedMerchants)
+
+@enduml

@@ -1,0 +1,96 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: takeaway-analysis-system
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/takeaway_analysis?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: takeaway_analysis
+    password: CHANGE_ME_BEFORE_RUNNING
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+
+# MyBatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.takeaway.analysis.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# Spark配置
+spark:
+  app-name: TakeawayAnalysis
+  master: local[*]
+  executor-memory: 2g
+  driver-memory: 1g
+
+# JWT配置
+jwt:
+  secret: CHANGE_ME_BEFORE_RUNNING
+  expiration: 86400000  # 24小时（毫秒）
+
+# 分析服务配置
+analysis:
+  cache:
+    enabled: true
+    expire-hours: 24
+
+# 数据清洗配置
+data:
+  cleaning:
+    rating:
+      min: 0
+      max: 5
+    price:
+      min: 0
+      max: 10000
+    sales:
+      min: 0
+      max: 10000000
+
+# 爬虫配置（使用Selenium）
+crawler:
+  meituan:
+    # 美团外卖H5页面基础URL
+    base-url: https://h5.waimai.meituan.com
+    # 页面加载超时时间（毫秒）
+    timeout: 30000
+    # 是否使用无头模式（不显示浏览器窗口）
+    # 设置为 false 可以看到浏览器操作过程，方便调试
+    headless: false
+    # Cookie配置（从浏览器开发者工具获取，用于保持登录状态）
+    # 格式：name=value; name2=value2
+    cookie: ""
+    # 模拟地理位置（用于定位附近商户）
+    # 可以在地图上查询你所在位置的经纬度
+    latitude: 39.9042
+    longitude: 116.4074
+    # 手动操作等待时间（秒），给用户时间在浏览器中手动选择位置等
+    manual-wait-seconds: 15
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.takeaway.analysis: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/takeaway-analysis.log
+

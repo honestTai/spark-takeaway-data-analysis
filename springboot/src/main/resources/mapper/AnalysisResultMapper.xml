@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.takeaway.analysis.mapper.AnalysisResultMapper">
+
+    <resultMap id="BaseResultMap" type="com.takeaway.analysis.entity.AnalysisResult">
+        <id column="result_id" property="resultId"/>
+        <result column="analysis_type" property="analysisType"/>
+        <result column="result_key" property="resultKey"/>
+        <result column="result_data" property="resultData"/>
+        <result column="stat_date" property="statDate"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.takeaway.analysis.entity.AnalysisResult" useGeneratedKeys="true" keyProperty="resultId">
+        INSERT INTO analysis_results (analysis_type, result_key, result_data, stat_date)
+        VALUES (#{analysisType}, #{resultKey}, #{resultData}, #{statDate})
+    </insert>
+
+    <update id="update" parameterType="com.takeaway.analysis.entity.AnalysisResult">
+        UPDATE analysis_results
+        SET result_data = #{resultData},
+            stat_date = #{statDate},
+            update_time = CURRENT_TIMESTAMP
+        WHERE result_id = #{resultId}
+    </update>
+
+    <select id="selectByTypeAndKey" resultMap="BaseResultMap">
+        SELECT * FROM analysis_results 
+        WHERE analysis_type = #{analysisType} AND result_key = #{resultKey}
+    </select>
+
+    <select id="selectByType" resultMap="BaseResultMap">
+        SELECT * FROM analysis_results 
+        WHERE analysis_type = #{analysisType}
+        ORDER BY stat_date DESC
+    </select>
+
+    <delete id="deleteByType">
+        DELETE FROM analysis_results WHERE analysis_type = #{analysisType}
+    </delete>
+
+</mapper>
+

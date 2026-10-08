@@ -1,0 +1,24 @@
+@startuml seq_merchant_list_query
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+
+actor "用户" as U
+participant "前端\n商户列表页" as FE
+participant "JwtAuthenticationInterceptor" as I
+participant "MerchantController" as C
+participant "商户服务\nMerchantService" as S
+database "MySQL\n(merchants)" as DB
+
+U -> FE : 打开商户列表
+FE -> I : GET /merchants\nAuthorization: Bearer token
+I -> I : 校验Token
+I -> C : 放行请求
+
+C -> S : getAll()
+S -> DB : 查询merchants列表
+DB --> S : List<Merchant>
+S --> C : List<Merchant>
+C --> FE : Result.success(list)
+
+@enduml

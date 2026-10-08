@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.takeaway.analysis.mapper.ImportLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.takeaway.analysis.entity.ImportLog">
+        <id column="log_id" property="logId"/>
+        <result column="import_type" property="importType"/>
+        <result column="file_name" property="fileName"/>
+        <result column="file_path" property="filePath"/>
+        <result column="total_count" property="totalCount"/>
+        <result column="success_count" property="successCount"/>
+        <result column="fail_count" property="failCount"/>
+        <result column="error_message" property="errorMessage"/>
+        <result column="import_status" property="importStatus"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="operator" property="operator"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.takeaway.analysis.entity.ImportLog" useGeneratedKeys="true" keyProperty="logId">
+        INSERT INTO import_logs (import_type, file_name, file_path, total_count, success_count, fail_count,
+                                error_message, import_status, start_time, end_time, operator)
+        VALUES (#{importType}, #{fileName}, #{filePath}, #{totalCount}, #{successCount}, #{failCount},
+                #{errorMessage}, #{importStatus}, #{startTime}, #{endTime}, #{operator})
+    </insert>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM import_logs WHERE log_id = #{logId}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM import_logs ORDER BY create_time DESC
+    </select>
+
+    <update id="update" parameterType="com.takeaway.analysis.entity.ImportLog">
+        UPDATE import_logs
+        SET total_count = #{totalCount},
+            success_count = #{successCount},
+            fail_count = #{failCount},
+            error_message = #{errorMessage},
+            import_status = #{importStatus},
+            end_time = #{endTime}
+        WHERE log_id = #{logId}
+    </update>
+
+</mapper>
+

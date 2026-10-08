@@ -1,0 +1,38 @@
+@startuml seq_crawl_dishes
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+
+actor "用户" as U
+participant "前端\n爬虫-菜品页" as FE
+participant "JwtAuthenticationInterceptor" as I
+participant "CrawlerController" as C
+participant "采集服务\nCrawlerService" as CS
+cloud "美团外卖\nH5/接口" as MT
+participant "清洗服务\nDataCleaningService" as CLN
+participant "菜品服务\nDishService" as DS
+database "MySQL\n(dishes)" as DB
+
+U -> FE : 选择商户并点击爬取
+FE -> I : POST /crawler/dishes/{merchantId}\nAuthorization: Bearer token
+I -> I : 校验Token
+I -> C : 放行请求
+
+C -> CS : crawlDishes(merchantId)
+CS -> MT : 获取菜品列表(API/HTML)
+MT --> CS : 原始菜品数据
+CS --> C : List<Dish>
+
+C -> CLN : cleanDishes(dishes)
+CLN -> CLN : 标准化/校验/异常值处理/按merchantId+dishName去重
+CLN --> C : {cleanedData,duplicateCount,invalidCount,...}
+
+alt cleanedData非空
+  C -> DS : batchSaveDishes(cleanedDishes)
+  DS -> DB : 批量写入dishes
+  DB --> DS : ok
+end
+
+C --> FE : Result.success(cleanedDishes)
+
+@enduml

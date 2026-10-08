@@ -1,0 +1,28 @@
+@startuml seq_batch_crawl
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+
+actor "用户" as U
+participant "前端\n批量采集页" as FE
+participant "JwtAuthenticationInterceptor" as I
+participant "CrawlerController" as C
+participant "采集服务\nCrawlerService" as CS
+cloud "美团外卖\nH5/接口" as MT
+
+U -> FE : 设置关键词/商户数\n启动批量采集
+FE -> I : POST /crawler/batch?keyword&merchantLimit\nAuthorization: Bearer token
+I -> I : 校验Token
+I -> C : 放行请求
+
+C -> CS : batchCrawlData(keyword,merchantLimit)
+CS -> MT : 获取商户列表
+MT --> CS : merchants
+loop 遍历每个商户
+  CS -> MT : 获取菜品列表(poiId=merchantId)
+  MT --> CS : dishes
+end
+CS --> C : void
+C --> FE : Result.success(\"批量爬取任务已启动\")
+
+@enduml
